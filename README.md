@@ -8,6 +8,17 @@ This project aims to develop a machine learning model to predict mental health o
 ### Link to the dataset
 https://www.kaggle.com/competitions/playground-series-s4e11/overview
 
+
+
+## Important Notes
+
+- 25 minutes presentation (not longer!)
+- include some recap of the theory you are using in your projects
+- project presentations: last 3 weeks of June during our regular time slots, 3 presentations each time, i.e. 6/week.
+- some of the projects are from Kaggle competitions. Here your result will be compared to the results of the entered projects.
+
+
+
 ## Project Structure
 
 - `src/`: Source code directory
