@@ -54,65 +54,97 @@ class MLPClassifier(nn.Module):
     
 
 
-def train(model, train_loader, test_loader,  save_path, epochs=10, learning_rate=0.001, device='cpu'):
+def train(model, train_loader, test_loader, save_path, epochs=10, learning_rate=0.001, device='cpu'):
     """
     Train the model
     """
     model.train()
-    optimizer = Adam(model.parameters(), lr=learning_rate, weight_decay=1e-4)  # Increased weight decay
+    optimizer = Adam(model.parameters(), lr=learning_rate, weight_decay=1e-4)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='max', factor=0.5, patience=3)
     loss_func = nn.CrossEntropyLoss()
     
     best_accuracy = 0
+    best_epoch = 0
+    
     for epoch in range(epochs):
         model.train()
-        epoch_loss = 0.0
+        train_loss = 0.0
+        train_correct = 0
+        train_total = 0
+        
+        # Training
         for batch in tqdm(train_loader, desc=f"Epoch {epoch+1}/{epochs}"):
             inputs, labels = batch
             inputs = inputs.to(device)
             labels = labels.to(device)
+            
             optimizer.zero_grad()
             outputs = model(inputs)
             loss = loss_func(outputs, labels)
-            epoch_loss += loss.item()
             loss.backward()
             optimizer.step()
+            
+            train_loss += loss.item()
+            _, predicted = torch.max(outputs.data, 1)
+            train_total += labels.size(0)
+            train_correct += (predicted == labels).sum().item()
         
-        avg_loss = epoch_loss / len(train_loader)
-        print(f"Epoch [{epoch+1}/{epochs}], Loss: {avg_loss:.4f}")
+        # Calculate training metrics
+        avg_train_loss = train_loss / len(train_loader)
+        train_accuracy = 100 * train_correct / train_total
         
-        # Evaluate and update learning rate
-        accuracy = evaluate(model, test_loader, device)
-        scheduler.step(accuracy)
+        # Evaluate on test set
+        test_loss, test_accuracy = evaluate(model, test_loader, device, loss_func)
+        
+        scheduler.step(test_accuracy)
+        
+        print("=" * 50)
+        print(f"Epoch: {epoch+1}")
+        print(f"Train Loss: {avg_train_loss:10.4f} | Train Accuracy: {train_accuracy:9.2f}%") 
+        print(f"Test Loss: {test_loss:11.4f} | Test Accuracy: {test_accuracy:10.2f}%")
         
         # Save best model
-        if accuracy > best_accuracy:
-            best_accuracy = accuracy
+        if test_accuracy > best_accuracy:
+            print("-" * 50)
+            best_accuracy = test_accuracy
+            best_epoch = epoch + 1
             save_model(model, save_path)
+        print("=" * 50)
+    
+    print("-" * 50)
+    print(f"\nTraining completed!")
+    print(f"Best model achieved {best_accuracy:.2f}% accuracy at epoch {best_epoch}")
     
     return model, best_accuracy
-    
 
-
-def evaluate(model, test_loader, device='cpu'):
+def evaluate(model, test_loader, device='cpu', loss_func=None):
     """
     Evaluate the model
     """
     model.eval()
     correct = 0
     total = 0
+    total_loss = 0.0
+    
     with torch.no_grad():
         for batch in tqdm(test_loader, desc="Evaluating"):
             inputs, labels = batch
             inputs = inputs.to(device)
             labels = labels.to(device)
+            
             outputs = model(inputs)
+            if loss_func is not None:
+                loss = loss_func(outputs, labels)
+                total_loss += loss.item()
+                
             _, predicted = torch.max(outputs.data, 1)
             total += labels.size(0)
             correct += (predicted == labels).sum().item()
+    
     accuracy = 100 * correct / total
-    print(f'Accuracy of the model on the test set: {accuracy:.2f}%')
-    return accuracy
+    avg_loss = total_loss / len(test_loader) if loss_func is not None else None
+    
+    return avg_loss, accuracy
 
 
 def save_model(model, path):
