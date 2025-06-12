@@ -13,10 +13,10 @@ MODELPATH = f"saved_models/model_{TIMESTAMP}/best_model.pth"
 # Define Hyperparameters
 HIDDEN_DIM = 256
 OUTPUT_DIM = 2
-DROPOUT = 0.3
+DROPOUT = 0.4
 EPOCHS = 50
 LEARNING_RATE = 0.0005
-BATCH_SIZE = 32
+BATCH_SIZE = 64
 NUM_HIDDEN_LAYERS = 5
 
 
@@ -48,8 +48,7 @@ def main():
     train_data, test_data = preprocess_data(data, BATCH_SIZE)
 
     # set input dimension with number of features
-    INPUT_DIM = next(iter(train_data))[0].shape[1]  # Anzahl der Features nach der Vorverarbeitung
-
+    INPUT_DIM = next(iter(train_data))[0].shape[1]
 
     # Model initialisieren
     model = MLPClassifier(INPUT_DIM, HIDDEN_DIM, DROPOUT, OUTPUT_DIM, NUM_HIDDEN_LAYERS).to(device)
