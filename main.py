@@ -7,15 +7,17 @@ from src.preprocessing import preprocess_data
 
 # Define constants
 TIMESTAMP = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-MODELPATH = f"saved_models/model{TIMESTAMP}.pth"
+DIRECTORY = f"saved_models/model_{TIMESTAMP}"
+MODELPATH = f"saved_models/model_{TIMESTAMP}/best_model.pth"
 
 # Define Hyperparameters
-HIDDEN_DIM = 128
+HIDDEN_DIM = 256
 OUTPUT_DIM = 2
 DROPOUT = 0.3
 EPOCHS = 50
 LEARNING_RATE = 0.0005
 BATCH_SIZE = 32
+NUM_HIDDEN_LAYERS = 5
 
 
 
@@ -28,7 +30,7 @@ def main():
     - Modell evaluieren
     """
     # Sicherstellen, dass der Ordner für Modelle existieren
-    os.makedirs("saved_models", exist_ok=True)
+    os.makedirs(DIRECTORY, exist_ok=True)
 
     # Setzen des Geräts (CPU oder GPU)
     if torch.cuda.is_available():
@@ -50,14 +52,12 @@ def main():
 
 
     # Model initialisieren
-    model = MLPClassifier(INPUT_DIM, HIDDEN_DIM, DROPOUT, OUTPUT_DIM).to(device)
+    model = MLPClassifier(INPUT_DIM, HIDDEN_DIM, DROPOUT, OUTPUT_DIM, NUM_HIDDEN_LAYERS).to(device)
 
     # Modell trainieren
-    model, accuracy = train(model, train_data, test_data, EPOCHS, LEARNING_RATE, device)
-    save_model(model, MODELPATH)
-    print("Model saved to ", MODELPATH)
+    model, accuracy = train(model, train_data, test_data, MODELPATH, EPOCHS, LEARNING_RATE, device)
 
-
+    # Modell evaluieren
     print("Evaluation Results:", accuracy)
 
 
