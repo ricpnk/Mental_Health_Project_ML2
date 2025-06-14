@@ -13,14 +13,31 @@ def preprocess_data(data: pd.DataFrame, batch_size):
     """
     Preprocess the data
     """
-    # train-test split
-    # train_data, test_data = train_test_split(data, test_size=0.2, random_state=42, stratify=data['Depression'])
+    # clean sleep duration and dietary habits
+    valid_sleep_durations = ['Less than 5 hours', '5-6 hours', '7-8 hours', 'More than 8 hours']
+    default_sleep_duration = '7-8 hours'
+    data['Sleep Duration'] = data['Sleep Duration'].apply(lambda x: x if x in valid_sleep_durations else default_sleep_duration)
+
+    valid_dietary_habits = ['Healthy', 'Moderately Healthy', 'Unhealthy']
+    default_dietary_habit = 'Moderately Healthy'
+    data['Dietary Habits'] = data['Dietary Habits'].apply(lambda x: x if x in valid_dietary_habits else default_dietary_habit)
+
+    # new features
+    if all(col in data.columns for col in ['Academic Pressure', 'Work Pressure', 'Financial Stress']):
+        data['Total_Stress'] = data['Academic Pressure'] + data['Work Pressure'] + data['Financial Stress']
+        data = data.drop(columns=['Academic Pressure', 'Work Pressure', 'Financial Stress'])
+        print(data.columns)
+    
+    if all(col in data.columns for col in [""])
+
 
     # drop unnecessary columns
-    drop_columns = ['id', 'Name']
+    drop_columns = ['id', 'Name', 'CGPA']
+    drop_columns = [col for col in drop_columns if col in data.columns]
     data = data.drop(columns=drop_columns)
 
-    feature_columns = data.columns[:-1]
+    feature_columns = data.columns
+    feature_columns = feature_columns.drop('Depression')
     target_column = 'Depression'
 
     X = data[feature_columns]
@@ -28,6 +45,8 @@ def preprocess_data(data: pd.DataFrame, batch_size):
 
     categorical_columns = X.select_dtypes(include=['object', 'category']).columns
     numerical_columns = X.select_dtypes(include=['int64', 'float64']).columns
+    ordinal_columns = ['Sleep Duration', 'Dietary Habits']
+    categorical_columns = [col for col in categorical_columns if col not in ordinal_columns]
 
     # Create preprocessing pipeline
     categorical_transformer = Pipeline(steps=[
@@ -40,9 +59,20 @@ def preprocess_data(data: pd.DataFrame, batch_size):
         ('scaler', StandardScaler())
     ])
 
+    ordinal_categories = [
+        ['Less than 5 hours', '5-6 hours', '7-8 hours', 'More than 8 hours'],
+        ['Unhealthy', 'Moderately Healthy', 'Healthy']
+    ]
+
+    ordinal_transformer = Pipeline(steps=[
+        ('imputer', SimpleImputer(strategy='most_frequent')),
+        ('ordinal', OrdinalEncoder(categories=ordinal_categories))
+    ])
+
     preprocessor = ColumnTransformer(
         transformers=[
             ('cat', categorical_transformer, categorical_columns),
+            ('ord', ordinal_transformer, ordinal_columns),
             ('num', numerical_transformer, numerical_columns)
         ]
     )
@@ -54,9 +84,6 @@ def preprocess_data(data: pd.DataFrame, batch_size):
     y = label_encoder.fit_transform(y)
 
     X_train, X_test, y_train, y_test = train_test_split(X_processed, y, test_size=0.2, random_state=42, stratify=y)
-    
-
-
 
 
     # # clean diatary habits
@@ -70,19 +97,6 @@ def preprocess_data(data: pd.DataFrame, batch_size):
     # default_sleep_duration = '7-8 hours'
     # train_data['Sleep Duration'] = train_data['Sleep Duration'].apply(lambda x: x if x in valid_sleep_durations else default_sleep_duration)
     # test_data['Sleep Duration'] = test_data['Sleep Duration'].map(lambda x: x if x in valid_sleep_durations else default_sleep_duration)
-
-    # # Define categories for ordinal encoding
-    # ordinal_categories = [
-    #     ['Less than 5 hours', '5-6 hours', '7-8 hours', 'More than 8 hours'],
-    #     ['Unhealthy', 'Moderately Healthy', 'Healthy']
-    # ]
-
-    # # convert categorical columns to numerical
-    # onehot_list = ['Gender', 'City', 'Working Professional or Student', 'Profession', 'Degree', 'Have you ever had suicidal thoughts ?', 'Family History of Mental Illness']
-    # ordinal_list = ['Sleep Duration', 'Dietary Habits']
-
-    # add preprocessor for one-hot and ordinal encoding
-
 
 
 
