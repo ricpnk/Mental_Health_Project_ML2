@@ -22,13 +22,20 @@ def preprocess_data(data: pd.DataFrame, batch_size):
     default_dietary_habit = 'Moderately Healthy'
     data['Dietary Habits'] = data['Dietary Habits'].apply(lambda x: x if x in valid_dietary_habits else default_dietary_habit)
 
-    # new features
-    if all(col in data.columns for col in ['Academic Pressure', 'Work Pressure', 'Financial Stress']):
-        data['Total_Stress'] = data['Academic Pressure'] + data['Work Pressure'] + data['Financial Stress']
-        data = data.drop(columns=['Academic Pressure', 'Work Pressure', 'Financial Stress'])
-        print(data.columns)
+    # new feature total stress
+    for col in ['Academic Pressure', 'Work Pressure', 'Financial Stress']:
+        if col in data.columns:
+            data[col] = data[col].fillna(0.0)
+
+    data['Total_Stress'] = (
+        data['Academic Pressure'] + data['Work Pressure'] + data['Financial Stress']
+    )
+    data = data.drop(columns=['Academic Pressure', 'Work Pressure', 'Financial Stress'])
+
+    # new feature age stress
+    data['Age_Stress'] = data['Total_Stress'] * data['Age']
+
     
-    if all(col in data.columns for col in [""])
 
 
     # drop unnecessary columns
@@ -77,28 +84,15 @@ def preprocess_data(data: pd.DataFrame, batch_size):
         ]
     )
 
+    # preprocess data
     X_processed = preprocessor.fit_transform(X)
     
     # Initialize and fit label encoder
     label_encoder = LabelEncoder()
     y = label_encoder.fit_transform(y)
 
-    X_train, X_test, y_train, y_test = train_test_split(X_processed, y, test_size=0.2, random_state=42, stratify=y)
-
-
-    # # clean diatary habits
-    # valid_diatary_habits = ['Healthy', 'Moderately Healthy', 'Unhealthy']
-    # default_dietary_habit = 'Moderately Healthy'
-    # train_data['Dietary Habits'] = train_data['Dietary Habits'].apply(lambda x: x if x in valid_diatary_habits else default_dietary_habit)
-    # test_data['Dietary Habits'] = test_data['Dietary Habits'].map(lambda x: x if x in valid_diatary_habits else default_dietary_habit)
-
-    # # clean sleep duration
-    # valid_sleep_durations = ['Less than 5 hours', '7-8 hours', 'More than 8 hours', '5-6 hours']
-    # default_sleep_duration = '7-8 hours'
-    # train_data['Sleep Duration'] = train_data['Sleep Duration'].apply(lambda x: x if x in valid_sleep_durations else default_sleep_duration)
-    # test_data['Sleep Duration'] = test_data['Sleep Duration'].map(lambda x: x if x in valid_sleep_durations else default_sleep_duration)
-
-
+    # split data
+    X_train, X_test, y_train, y_test = train_test_split(X_processed, y, test_size=0.2, random_state=100, stratify=y)
 
     # Convert DataFrames to tensors
     X_train_tensor = torch.tensor(X_train, dtype=torch.float32)
