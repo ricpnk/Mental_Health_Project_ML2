@@ -1,14 +1,15 @@
+import os
+from datetime import datetime
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from tqdm import tqdm
+from torch.utils.tensorboard import SummaryWriter
 from torch.optim import Adam
 from torch.utils.data import DataLoader
 from sklearn.metrics import precision_score, recall_score, f1_score, roc_auc_score, confusion_matrix
 import numpy as np
-from torch.utils.tensorboard import SummaryWriter
-import os
-from datetime import datetime
+
 
 class MLPClassifier(nn.Module):
     """
@@ -87,7 +88,7 @@ def train(model, train_loader, test_loader, save_path, epochs=10, learning_rate=
         train_total = 0
         
         # Training
-        for batch_idx, batch in enumerate(tqdm(train_loader, desc=f"Epoch {epoch+1}/{epochs}")):
+        for batch in tqdm(train_loader, desc=f"Epoch {epoch+1}/{epochs}"):
             inputs, labels = batch
             inputs = inputs.to(device)
             labels = labels.to(device)
@@ -102,10 +103,6 @@ def train(model, train_loader, test_loader, save_path, epochs=10, learning_rate=
             _, predicted = torch.max(outputs.data, 1)
             train_total += labels.size(0)
             train_correct += (predicted == labels).sum().item()
-            
-            # Log batch-level metrics
-            if batch_idx % 10 == 0:  # Log every 10 batches
-                writer.add_scalar('Loss/train_batch', loss.item(), epoch * len(train_loader) + batch_idx)
         
         # Calculate training metrics
         avg_train_loss = train_loss / len(train_loader)
