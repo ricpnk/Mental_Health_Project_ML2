@@ -1,7 +1,9 @@
 # custom
 saved_models/*
 presentation.key
+runs/*
 
+	
 # General
 .DS_Store
 .AppleDouble
