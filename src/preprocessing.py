@@ -35,14 +35,12 @@ def preprocess_data(data: pd.DataFrame, batch_size):
     # new feature age stress
     data['Age_Stress'] = data['Total_Stress'] * data['Age']
 
-    
-
-
     # drop unnecessary columns
     drop_columns = ['id', 'Name', 'CGPA']
     drop_columns = [col for col in drop_columns if col in data.columns]
     data = data.drop(columns=drop_columns)
 
+    # create X and y
     feature_columns = data.columns
     feature_columns = feature_columns.drop('Depression')
     target_column = 'Depression'
@@ -50,6 +48,7 @@ def preprocess_data(data: pd.DataFrame, batch_size):
     X = data[feature_columns]
     y = data[target_column]
 
+    # create categorical, numerical and ordinal columns
     categorical_columns = X.select_dtypes(include=['object', 'category']).columns
     numerical_columns = X.select_dtypes(include=['int64', 'float64']).columns
     ordinal_columns = ['Sleep Duration', 'Dietary Habits']
@@ -84,21 +83,22 @@ def preprocess_data(data: pd.DataFrame, batch_size):
         ]
     )
 
-    # preprocess data
-    X_processed = preprocessor.fit_transform(X)
-    
     # Initialize and fit label encoder
     label_encoder = LabelEncoder()
     y = label_encoder.fit_transform(y)
 
     # split data
-    X_train, X_test, y_train, y_test = train_test_split(X_processed, y, test_size=0.2, random_state=100, stratify=y)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=99, stratify=y)
 
+    # preprocess data
+    X_train_processed = preprocessor.fit_transform(X_train)
+    X_test_processed = preprocessor.transform(X_test)
+    
     # Convert DataFrames to tensors
-    X_train_tensor = torch.tensor(X_train, dtype=torch.float32)
+    X_train_tensor = torch.tensor(X_train_processed, dtype=torch.float32)
     Y_train_tensor = torch.tensor(y_train, dtype=torch.long)
 
-    X_test_tensor = torch.tensor(X_test, dtype=torch.float32)
+    X_test_tensor = torch.tensor(X_test_processed, dtype=torch.float32)
     Y_test_tensor = torch.tensor(y_test, dtype=torch.long)
 
     # Create DataLoader
