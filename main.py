@@ -12,9 +12,9 @@ MODELPATH = f"saved_models/model_{TIMESTAMP}/best_model.pth"
 HYPERS_PATH = f"saved_models/model_{TIMESTAMP}/hyperparameters.txt"
 
 # Define Hyperparameters
-HIDDEN_DIM = 128
+HIDDEN_DIM = 256
 OUTPUT_DIM = 2
-DROPOUT = 0.3
+DROPOUT = 0.5
 EPOCHS = 50
 LEARNING_RATE = 0.0005
 BATCH_SIZE = 64
