@@ -9,17 +9,16 @@ from src.preprocessing import preprocess_data
 TIMESTAMP = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
 DIRECTORY = f"saved_models/model_{TIMESTAMP}"
 MODELPATH = f"saved_models/model_{TIMESTAMP}/best_model.pth"
+HYPERS_PATH = f"saved_models/model_{TIMESTAMP}/hyperparameters.txt"
 
 # Define Hyperparameters
 HIDDEN_DIM = 128
 OUTPUT_DIM = 2
-DROPOUT = 0.5
+DROPOUT = 0.3
 EPOCHS = 50
 LEARNING_RATE = 0.0005
 BATCH_SIZE = 64
-NUM_HIDDEN_LAYERS = 10
-
-
+NUM_HIDDEN_LAYERS = 20
 
 def main():
     """
@@ -31,6 +30,9 @@ def main():
     """
     # create directory for models
     os.makedirs(DIRECTORY, exist_ok=True)
+    
+    # save hyperparameters
+    save_hyperparameters()
 
     # set device
     if torch.cuda.is_available():
@@ -56,6 +58,26 @@ def main():
     # train model + evaluate
     model = train(model, train_data, test_data, MODELPATH, EPOCHS, LEARNING_RATE, device)
 
+
+def save_hyperparameters():
+    """
+    Save hyperparameters to file
+    """
+    hyperparameters = {
+        "HIDDEN_DIM": HIDDEN_DIM,
+        "OUTPUT_DIM": OUTPUT_DIM,
+        "DROPOUT": DROPOUT,
+        "EPOCHS": EPOCHS,
+        "LEARNING_RATE": LEARNING_RATE,
+        "BATCH_SIZE": BATCH_SIZE,
+        "NUM_HIDDEN_LAYERS": NUM_HIDDEN_LAYERS
+    }
+    
+    with open(HYPERS_PATH, 'w') as f:
+        f.write("Model Hyperparameters:\n")
+        f.write("=====================\n\n")
+        for key, value in hyperparameters.items():
+            f.write(f"{key}: {value}\n")
 
 
 if __name__ == "__main__":
