@@ -64,23 +64,4 @@ For example:
 uv run main.py
 ```
 
-## File Descriptions
-
-### `main.py`
-The main script that handles:
-- Data loading
-- Data preprocessing
-- Model training and evaluation
-
-### `src/load_data.py`
-- implement me........
-
-### `src/preprocessing.py`
-- implement me........
-
-### `src/models.py`
-- implement me........
-
-### `notebooks/data_exploration.ipynb`
-- implement me........
 
